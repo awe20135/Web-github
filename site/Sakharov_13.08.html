@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html>	
+	<head>
+		<title>Example 01.01 - Basic skeleton</title>
+		
+	</head>
+	<body>
+		<script type="text/javascript" language="JavaScript1.5" src="https://rawgit.com/Vasilui/habrahabr/master/WebGL_Three.js/libs/three.js"></script>
+		<script type="text/javascript" language="JavaScript1.5" src="https://rawgit.com/Vasilui/habrahabr/master/WebGL_Three.js/libs/stats.js"></script>
+		<script type="text/javascript" language="JavaScript1.5" src="https://rawgit.com/Vasilui/habrahabr/master/WebGL_Three.js/libs/dat.gui.js"></script>
+		<script type="text/javascript" 
+		src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.js">
+		</script>
+		<!--Div which will hold the Output -->
+		<div id="WebGL-output">
+		</div>
+		<!--Javascript code that runs our Three.js examples -->
+		<script type="text/javascript">
+		$(function () {
+			var steps=[0,0,0];
+			var controls = new function() {
+				this.movingCubeX = 0;
+				this.movingCylinderY = 3;
+				this.movingThorZ = 0;
+				this.rotationRingX = 0;
+				this.rotationCircleY = 0;
+				this.rotationOctoZ = 0;
+				this.bouncingball1 = .03;
+				this.bouncingBall2 = .03;
+				this.bouncingMovingBall = .03;
+			}
+			var gui = new dat.GUI();
+			var moving = gui.addFolder('Moving');
+			moving.add(controls, 'movingCubeX',-10,35);
+			moving.add(controls, 'movingCylinderY',3,18);
+			moving.add(controls, 'movingThorZ',-15,28);
+
+			var rotation = gui.addFolder('Rotation');
+			rotation.add(controls, 'rotationRingX',-0.5*Math.PI,0.5*Math.PI);
+			rotation.add(controls, 'rotationCircleY',-0.5*Math.PI,0.5*Math.PI);
+			rotation.add(controls, 'rotationOctoZ',-0.5*Math.PI,0.5*Math.PI);
+
+			var bouncing = gui.addFolder('Bouncing');
+			bouncing.add(controls, 'bouncingball1', 0., 0.2);
+			bouncing.add(controls, 'bouncingBall2', 0., 0.2);
+			bouncing.add(controls, 'bouncingMovingBall', 0, 0.2);
+
+			var step=0;
+			var scene = new THREE.Scene();
+			var camera = new THREE.PerspectiveCamera(45 
+				, window.innerWidth / window.innerHeight , 0.1, 1000);
+			var renderer = new THREE.WebGLRenderer();
+			renderer.setClearColorHex(0xEEEEEE, 1.0);
+			renderer.setSize(window.innerWidth, window.innerHeight);
+			renderer.shadowMapEnabled = true;
+
+			// Plane
+			var planeGeometry = new THREE.PlaneGeometry(60,60,1,1);
+			var planeMaterial = new THREE.MeshLambertMaterial({color: 0xffffff});
+			var plane = new THREE.Mesh(planeGeometry,planeMaterial);
+			plane.rotation.x=-0.5*Math.PI;
+			plane.position.x = 15;
+			plane.position.y = 0;
+			plane.position.z = 0;
+			plane.receiveShadow = true;
+			scene.add(plane);
+			
+			// BEGIN ELEMENTS
+
+			// X moving
+			var cubeGeometry = new THREE.CubeGeometry(5,5,5);
+			var cubeMaterial = new THREE.MeshLambertMaterial({color: 0xff0000});
+			var cube = new THREE.Mesh(cubeGeometry, cubeMaterial);
+			cube.position.x = 0;
+			cube.position.y = 3;
+			cube.position.z = -20;
+			cube.castShadow = true;
+			scene.add(cube);
+
+			// Y moving
+			var cylinderGeometry = new THREE.CylinderGeometry( 1, 3, 6, 32 );
+			var cylinderMaterial = new THREE.MeshLambertMaterial({color: 0xa1a100});
+			var cylinder = new THREE.Mesh(cylinderGeometry, cylinderMaterial);
+			cylinder.position.y=3;
+			cylinder.position.x=-10;
+			cylinder.castShadow = true;
+			scene.add(cylinder);
+			
+			// Z moving
+			var thorGeometry = new THREE.TorusGeometry( 2, 1, 16, 10 );
+			var thorMaterial = new THREE.MeshLambertMaterial({color: 0x7777ff});
+			var thor = new THREE.Mesh(thorGeometry,thorMaterial);
+			thor.position.x = 35;
+			thor.position.y = 4;
+			thor.position.z = 0;
+			thor.castShadow = true;
+			scene.add(thor);
+
+			// X rotation
+			var ringGeometry = new THREE.RingGeometry( 1, 5, 32 );
+			var ringMaterial = new THREE.MeshLambertMaterial({color:0xffa100});
+			var ring = new THREE.Mesh(ringGeometry, ringMaterial);
+			ring.position.x=-10;
+			ring.position.y=12;
+			ring.position.z=-20;
+			ring.castShadow = true;
+			scene.add(ring);
+
+			// Y rotation
+			var circleGeometry = new THREE.CircleGeometry( 5, 32 );
+			var circleMaterial = new THREE.MeshLambertMaterial({color: 0x00a1a1});
+			var circle= new THREE.Mesh(circleGeometry,circleMaterial);
+			circle.position.x=0;
+			circle.position.y=12;
+			circle.position.z=-20;
+			circle.castShadow = true;
+			scene.add(circle);
+
+			// Z rotation
+			var octahedronGeometry = new THREE.OctahedronGeometry(5,0);
+			var octahedronMaterial = new THREE.MeshLambertMaterial({color: 0xa100a1});
+			var octahedron =  new THREE.Mesh(octahedronGeometry,octahedronMaterial);
+			octahedron.position.x=10;
+			octahedron.position.y=12;
+			octahedron.position.z=-20;
+			octahedron.castShadow = true;
+			scene.add(octahedron);
+
+			// STATIC1 bouncing
+			var ball1Geometry = new THREE.OctahedronGeometry(3,5);
+			var ball1Material = new THREE.MeshLambertMaterial({color: 0x00a170});
+			var ball1 =  new THREE.Mesh(ball1Geometry,ball1Material);
+			ball1.position.x=0;
+			ball1.position.y=3;
+			ball1.position.z=10;
+			ball1.castShadow = true;
+			scene.add(ball1);
+
+			// STATIC2 bouncing
+			var ball2Geometry = new THREE.OctahedronGeometry(3,1);
+			var ball2Material = new THREE.MeshLambertMaterial({color: 0x6F00FF});
+			var ball2 =  new THREE.Mesh(ball2Geometry,ball2Material);
+			ball2.position.x=0;
+			ball2.position.y=3;
+			ball2.position.z=20;
+			ball2.castShadow = true;
+			scene.add(ball2);
+
+			// MOVING bouncing
+			var movingBallGeometry = new THREE.OctahedronGeometry(3,5);
+			var movingBallMaterial = new THREE.MeshLambertMaterial({color: 0xa100a1});
+			var movingBall =  new THREE.Mesh(movingBallGeometry,movingBallMaterial);
+			movingBall.position.x=20;
+			movingBall.position.y=3;
+			movingBall.position.z=15;
+			movingBall.castShadow = true;
+			scene.add(movingBall);
+			
+			// END ELEMENTS
+
+			var spotLight = new THREE.SpotLight( 0xffffff );
+			spotLight.position.set( -40, 60, -10 );
+			spotLight.castShadow = true;
+			scene.add(spotLight );
+			
+			camera.position.x = -30;
+			camera.position.y = 40;
+			camera.position.z = 30;
+			camera.lookAt(scene.position);
+			$("#WebGL-output").append(renderer.domElement);
+			renderScene(renderer);
+			function renderScene() {
+				/*cube.rotation.x += controls.rotationSpeed;
+				cube.rotation.y += controls.rotationSpeed;
+				cube.rotation.z += controls.rotationSpeed;
+				step+=controls.bouncingSpeed;
+				thor.position.x = 20+( 10*(Math.cos(step)));
+				thor.position.y = 2 +( 10*Math.abs(Math.sin(step)));*/
+				cube.position.x=controls.movingCubeX;
+				cylinder.position.y=controls.movingCylinderY;
+				thor.position.z=controls.movingThorZ;
+				ring.rotation.x=controls.rotationRingX;
+				circle.rotation.y=controls.rotationCircleY;
+				octahedron.rotation.z=controls.rotationOctoZ;
+				steps[0]+=controls.bouncingball1;
+				ball1.position.y = 3 + (18 * Math.abs(Math.sin(steps[0])));
+				steps[1]+=controls.bouncingBall2;
+				ball2.position.y = 3 + (18 * Math.abs(Math.sin(steps[1])));
+				steps[2]+=controls.bouncingMovingBall;
+				movingBall.position.z = 15+( 10*(Math.cos(steps[2])));
+				movingBall.position.y = 3 + (18 * Math.abs(Math.sin(steps[2])));
+				requestAnimationFrame(renderScene);
+				renderer.render(scene, camera);
+			}
+			
+		});
+		
+		</script>
+				
+	</body>
+</html>
